@@ -108,7 +108,7 @@ version = "0.11.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a229bfd78e4827c91b9b95784f69492c1b77c1ab75a45a8a037b139215086f94"
 dependencies = [
- "hybrid-array 0.3.0",
+ "hybrid-array",
 ]
 
 [[package]]
@@ -343,7 +343,7 @@ name = "crypto-bigint"
 version = "0.7.0-pre.0"
 source = "git+https://github.com/RustCrypto/crypto-bigint.git#21ebb49ddb292c4f75ed909e45cdde54888d049e"
 dependencies = [
- "hybrid-array 0.3.0",
+ "hybrid-array",
  "num-traits",
  "rand_core 0.9.3",
  "subtle",
@@ -366,7 +366,7 @@ version = "0.2.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "170d71b5b14dec99db7739f6fc7d6ec2db80b78c3acb77db48392ccc3d8a9ea0"
 dependencies = [
- "hybrid-array 0.3.0",
+ "hybrid-array",
  "rand_core 0.9.3",
 ]
 
@@ -375,7 +375,7 @@ name = "crypto-common"
 version = "0.2.0-rc.2"
 source = "git+https://github.com/baloo/traits.git?branch=baloo%2Frelax-sized-rng#abd9d63e1d3e1eef4e1ebb845aadbd678faa1cbe"
 dependencies = [
- "hybrid-array 0.3.0",
+ "hybrid-array",
 ]
 
 [[package]]
@@ -485,7 +485,7 @@ dependencies = [
  "ff",
  "group",
  "hkdf",
- "hybrid-array 0.3.0",
+ "hybrid-array",
  "rand_core 0.9.3",
  "sec1",
  "subtle",
@@ -543,7 +543,7 @@ dependencies = [
  "bincode",
  "criterion",
  "hex",
- "hybrid-array 0.2.3",
+ "hybrid-array",
  "openssl-sys",
  "postcard",
  "rand_chacha 0.3.1",
@@ -756,15 +756,6 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2d35805454dc9f8662a98d6d61886ffe26bd465f5960e0e55345c70d5c0d2a9"
-dependencies = [
- "typenum",
-]
-
-[[package]]
-name = "hybrid-array"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4dab50e193aebe510fe0e40230145820e02f48dae0cf339ea4204e6e708ff7bd"
@@ -934,7 +925,7 @@ dependencies = [
  "crypto-common 0.2.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex",
  "hex-literal 1.0.0",
- "hybrid-array 0.3.0",
+ "hybrid-array",
  "kem",
  "num-rational",
  "rand",
@@ -1386,7 +1377,7 @@ checksum = "a017a4aa8f0bd51e9d0184d98042dfe9285218fec098493f47d9a8aa0f1a3f27"
 dependencies = [
  "base16ct",
  "der",
- "hybrid-array 0.3.0",
+ "hybrid-array",
  "subtle",
  "zeroize",
 ]
