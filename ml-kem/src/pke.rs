@@ -6,6 +6,9 @@ use crate::crypto::{G, PRF};
 use crate::encode::Encode;
 use crate::param::{EncodedCiphertext, EncodedDecryptionKey, EncodedEncryptionKey, PkeParams};
 use crate::util::B32;
+extern crate std;
+use std::fs::File;
+use std::io::Write;
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -103,6 +106,56 @@ impl<P> EncryptionKey<P>
 where
     P: PkeParams,
 {
+    pub fn randomness_expansion(
+        &self,
+        randomness: &B32,
+    ) -> (
+        PolynomialVector<<P as crate::ParameterSet>::K>,
+        PolynomialVector<<P as crate::ParameterSet>::K>,
+        Polynomial,
+    ) {
+        let r = PolynomialVector::<P::K>::sample_cbd::<P::Eta1>(randomness, 0);
+        let e1 = PolynomialVector::<P::K>::sample_cbd::<P::Eta2>(randomness, P::K::U8);
+        let prf_output = PRF::<P::Eta2>(randomness, 2 * P::K::U8);
+        let e2: Polynomial = Polynomial::sample_cbd::<P::Eta2>(&prf_output);
+
+        (r, e1, e2)
+    }
+
+    /// Deterministic version of encrypt
+    pub fn encrypt_deterministic(
+        &self,
+        message: &B32,
+        r: PolynomialVector<<P as crate::ParameterSet>::K>,
+        e1: PolynomialVector<<P as crate::ParameterSet>::K>,
+        e2: Polynomial,
+    ) -> EncodedCiphertext<P> {
+        let A_hat_t = NttMatrix::<P::K>::sample_uniform(&self.rho, true);
+        std::println!("A_hat_t: {:?}", A_hat_t);
+
+        let r_hat: NttVector<P::K> = r.ntt();
+        let ATr: PolynomialVector<P::K> = (&A_hat_t * &r_hat).ntt_inverse();
+        let mut u = ATr + e1;
+
+        let mut mu: Polynomial = Encode::<U1>::decode(message);
+        mu.decompress::<U1>();
+
+        let tTr: Polynomial = (&self.t_hat * &r_hat).ntt_inverse();
+        std::println!("tTr: {:?}", tTr);
+        let mut v = &(&tTr + &e2) + &mu;
+
+        let u_compressed = u.compress::<P::Du>();
+        let v_compressed = v.compress::<P::Dv>();
+
+        let c1 = Encode::<P::Du>::encode(u_compressed);
+        let c2 = Encode::<P::Dv>::encode(v_compressed);
+
+        std::println!("c1: {:?}", c1);
+        std::println!("c2: {:?}", c2);
+
+        P::concat_ct(c1, c2)
+    }
+
     /// Encrypt the specified message for the holder of the corresponding decryption key, using the
     /// provided randomness, according the `K-PKE.Encrypt` procedure.
     pub fn encrypt(&self, message: &B32, randomness: &B32) -> EncodedCiphertext<P> {
@@ -195,5 +248,32 @@ mod test {
         codec_test::<MlKem512Params>();
         codec_test::<MlKem768Params>();
         codec_test::<MlKem1024Params>();
+    }
+
+    fn extracting_test_vectors<P: PkeParams>() {
+        let d = B32::default();
+
+        // test message: 6b 79 62 65 72 20 69 73 20 63 6f 6f 6c, padded with zeros
+        let original = B32::from([
+            0x6b, 0x79, 0x62, 0x65, 0x72, 0x20, 0x69, 0x73, 0x20, 0x63, 0x6f, 0x6f, 0x6c, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+        ]);
+
+        let (dk, ek) = DecryptionKey::<P>::generate(&d);
+
+        let randomness = B32::default();
+
+        let (r, e1, e2) = ek.randomness_expansion(&randomness);
+
+        let encrypted = ek.encrypt_deterministic(&original, r, e1, e2);
+
+        let decrypted = dk.decrypt(&encrypted);
+        assert_eq!(original, decrypted);
+    }
+
+    #[test]
+    fn test_vectors() {
+        extracting_test_vectors::<MlKem512Params>();
     }
 }

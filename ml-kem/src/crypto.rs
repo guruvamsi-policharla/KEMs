@@ -9,6 +9,7 @@ use sha3::{
 
 use crate::param::{CbdSamplingSize, EncodedPolynomial};
 use crate::util::B32;
+extern crate std;
 
 pub fn rand<L: ArraySize, R: CryptoRng + ?Sized>(rng: &mut R) -> Array<u8, L> {
     let mut val = Array::default();

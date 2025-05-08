@@ -6,6 +6,7 @@ use crate::crypto::{PRF, PrfOutput, XOF};
 use crate::encode::Encode;
 use crate::param::{ArraySize, CbdSamplingSize};
 use crate::util::{B32, Truncate};
+extern crate std;
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -171,7 +172,8 @@ impl<K: ArraySize> PolynomialVector<K> {
         Self(Array::from_fn(|i| {
             let N = start_n + i.truncate();
             let prf_output = PRF::<Eta>(sigma, N);
-            Polynomial::sample_cbd::<Eta>(&prf_output)
+            let out = Polynomial::sample_cbd::<Eta>(&prf_output);
+            out
         }))
     }
 }
@@ -710,13 +712,15 @@ mod test {
         // Eta = 2
         let sigma = B32::default();
         let prf_output = PRF::<U2>(&sigma, 0);
-        let sample = Polynomial::sample_cbd::<U2>(&prf_output).0;
-        test_sample(&sample, &CBD2);
-
+        let sample = Polynomial::sample_cbd::<U2>(&prf_output);
+        test_sample(&sample.0, &CBD2);
+        std::println!("sample prf2 = {:?}", prf_output);
+        std::println!("sample eta=2 = {:?}", sample);
         // Eta = 3
         let sigma = B32::default();
         let prf_output = PRF::<U3>(&sigma, 0);
         let sample = Polynomial::sample_cbd::<U3>(&prf_output).0;
         test_sample(&sample, &CBD3);
+        std::println!("sample eta=3 = {:?}", sample);
     }
 }
